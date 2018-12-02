@@ -1,6 +1,6 @@
 package cf.cryptoclaim.config;
 
-import static cf.cryptoclaim.constants.CryptoClaimConstants.C9E_DATABASE_NAME;
+import static cf.cryptoclaim.constants.CryptoClaimConstants.C9M_DATABASE_NAME;
 import static cf.cryptoclaim.constants.CryptoClaimConstants.C9M_MONGODB_USERNAME_KEY;
 import static cf.cryptoclaim.constants.CryptoClaimConstants.C9M_MONGODB_PASSWORD_KEY;
 
@@ -24,7 +24,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 	
 	@Override
 	public String getDatabaseName() {
-		return C9E_DATABASE_NAME;
+		return C9M_DATABASE_NAME;
 	}
 
 	@Override
