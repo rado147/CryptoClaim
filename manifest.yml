@@ -1,0 +1,8 @@
+---
+applications:
+- name: 
+  memory: 1G
+  host: 
+  path: target/crypto-claim-0.0.1-SNAPSHOT.jar
+env:
+  JAVA_OPTS: -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8001
