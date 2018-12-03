@@ -1,10 +1,11 @@
 ---
 applications:
-- name: mytest147
+- name: cryptoclaim
   memory: 1G
-  host: mytest147
+  host: cryptoclaim
   path: target/crypto-claim-0.0.1-SNAPSHOT.jar
 env:
   JAVA_OPTS: -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8001
   C9M_MONGODB_PASSWORD: 
   C9M_MONGODB_USERNAME: 
+  C9M_MASTER_KEY: 
