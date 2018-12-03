@@ -10,41 +10,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Document(collection = "cryptoClaimTenants")
 public class CryptoClaimTenant {
 
-	private String id;
+	@Id
+	@org.springframework.data.mongodb.core.mapping.Field("_id")
 	private String name;
 	@JsonIgnore
-	private String publicKey;
+	private byte[] publicKey;
 	@JsonIgnore
-	private String privateKey;
+	private byte[] privateKey;
 
-	public CryptoClaimTenant(String name, String publicKey, String privateKey) {
+	public CryptoClaimTenant(String name, byte[] publicKey, byte[] privateKey) {
 		super();
-		this.id = UUID.randomUUID().toString();
 		this.name = name;
 		this.publicKey = publicKey;
 		this.privateKey = privateKey;
-	}
-
-	public String getId() {
-		return id;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public String getPublicKey() {
+	public byte[] getPublicKey() {
 		return publicKey;
 	}
 
-	public String getPrivateKey() {
+	public byte[] getPrivateKey() {
 		return privateKey;
-	}
-
-	@Id
-	@org.springframework.data.mongodb.core.mapping.Field("_id")
-	public String getStorageKey() {
-		return name + "@" + id;
 	}
 	
 }

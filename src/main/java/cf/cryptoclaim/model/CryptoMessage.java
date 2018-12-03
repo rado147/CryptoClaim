@@ -15,15 +15,32 @@ public class CryptoMessage {
 	public String getSendingTenant() {
 		return sendingTenant;
 	}
+	
 	public String getReceivingTenant() {
 		return receivingTenant;
 	}
+	
 	public byte[] getEncryptedData() {
 		return encryptedData;
 	}
+	
 	public Date getSendAt() {
 		return sendAt;
 	}
 	
+	public void setSendingTenant(String sendingTenant) {
+		this.sendingTenant = sendingTenant;
+	}
 	
+	public void setReceivingTenant(String receivingTenant) {
+		this.receivingTenant = receivingTenant;
+	}
+	
+	public void setEncryptedData(byte[] encryptedData) {
+		this.encryptedData = encryptedData;
+	}
+	
+	public void setSendAt(Date sendAt) {
+		this.sendAt = sendAt;
+	}
 }
