@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import cf.cryptoclaim.exception.CryptoClaimException;
+import cf.cryptoclaim.exception.KeyDerivationException;
 import cf.cryptoclaim.exception.MongoInconsistencyException;
 import cf.cryptoclaim.model.CryptoClaimTenant;
 import cf.cryptoclaim.model.CryptoMessage;
@@ -58,7 +59,7 @@ public class ClaimEncryptionService {
 		keyFactory = KeyFactory.getInstance(RSA_ENCRYPTION_ALGORITHM);
 		
 		symmetricCipher = Cipher.getInstance(AES_WITH_MODE);
-		symmetricCipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(masterKey.getBytes(UTF8_ENCODING), AES_ENCRYPTION_ALGORITHM));
+		symmetricCipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(masterKey.getBytes(UTF8_ENCODING), AES_ENCRYPTION_ALGORITHM));
 		
 		asymetricCipher = Cipher.getInstance(RSA_ENCRYPTION_ALGORITHM);
 	}
@@ -134,7 +135,7 @@ public class ClaimEncryptionService {
 		try {
 			return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
 		} catch (InvalidKeySpecException e) {
-			throw new CryptoClaimException("Error in deriving private key", e);
+			throw new KeyDerivationException("Error in deriving private key", e);
 		}
 	}
 	
@@ -142,7 +143,7 @@ public class ClaimEncryptionService {
 		try {
 			return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
 		} catch (InvalidKeySpecException e) {
-			throw new CryptoClaimException("Error in deriving public key", e);
+			throw new KeyDerivationException("Error in deriving public key", e);
 		}
 	}
 	
