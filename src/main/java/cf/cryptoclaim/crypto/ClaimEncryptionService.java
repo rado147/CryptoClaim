@@ -115,6 +115,7 @@ public class ClaimEncryptionService {
 	}
 
 	private byte[] performSymmetricEncryption() {
+		
 		// TODO
 		return null;
 	}
