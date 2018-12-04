@@ -1,0 +1,9 @@
+{
+	"allowedRequests": [
+		{
+			"path": "/register",
+			"methods": ["POST"],
+			"parameters": ["username", "password"]
+		}
+	]
+}
