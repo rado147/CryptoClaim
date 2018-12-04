@@ -1,7 +1,5 @@
 package cf.cryptoclaim.model;
 
-import java.util.UUID;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,15 +12,22 @@ public class CryptoClaimTenant {
 	@org.springframework.data.mongodb.core.mapping.Field("_id")
 	private String name;
 	@JsonIgnore
+	private String password;
+	@JsonIgnore
 	private byte[] publicKey;
 	@JsonIgnore
 	private byte[] privateKey;
 
-	public CryptoClaimTenant(String name, byte[] publicKey, byte[] privateKey) {
+	public CryptoClaimTenant(String name, String password, byte[] publicKey, byte[] privateKey) {
 		super();
 		this.name = name;
+		this.password = password;
 		this.publicKey = publicKey;
 		this.privateKey = privateKey;
+	}
+
+	public String getPassword() {
+		return password;
 	}
 
 	public String getName() {
