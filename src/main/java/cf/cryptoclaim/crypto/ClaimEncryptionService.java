@@ -27,10 +27,10 @@ import org.springframework.stereotype.Component;
 
 import cf.cryptoclaim.exception.CryptoClaimException;
 import cf.cryptoclaim.exception.MongoInconsistencyException;
-import cf.cryptoclaim.model.CryptoClaimTenant;
+import cf.cryptoclaim.model.CryptoClaimUser;
 import cf.cryptoclaim.model.CryptoMessage;
 import cf.cryptoclaim.repositories.CryptoMessagesRepository;
-import cf.cryptoclaim.repositories.TenantsRepository;
+import cf.cryptoclaim.repositories.UsersRepository;
 
 @Component
 public class ClaimEncryptionService {
@@ -49,7 +49,7 @@ public class ClaimEncryptionService {
 	private SecretKeySpec secretKeySpec;
 	
 	@Autowired
-	private TenantsRepository tenantsRepository;
+	private UsersRepository usersRepository;
 	
 	@Autowired
 	private CryptoMessagesRepository cryptoMessagesRepository;
@@ -66,25 +66,34 @@ public class ClaimEncryptionService {
 		asymetricCipher = Cipher.getInstance(RSA_ENCRYPTION_ALGORITHM);
 	}
 	
-	public CryptoClaimTenant registerTenant(String username, String password) throws CryptoClaimException {
+	public CryptoClaimUser registerTenant(String username, String password) throws CryptoClaimException {
 		KeyPair keyPair = keyPairManager.generateKeyPair();
 		
-		CryptoClaimTenant tenant = new CryptoClaimTenant(username, password, keyPair.getPublic().getEncoded(), performSymmetricEncryption(keyPair.getPrivate().getEncoded()));
+		CryptoClaimUser user = new CryptoClaimUser(username, password, keyPair.getPublic().getEncoded(), performSymmetricEncryption(keyPair.getPrivate().getEncoded()));
 		
-		return tenantsRepository.save(tenant);
+		return usersRepository.save(user);
 	}
 	
-	public void encryptMessage(String tenantName, byte[] message) throws CryptoClaimException {
-		List<CryptoClaimTenant> result = tenantsRepository.findByName(tenantName);
+	public String getPublicKey(String username) throws CryptoClaimException {
+		List<CryptoClaimUser> result = usersRepository.findByName(username);
+		
 		validateGetResult(result);
-		CryptoClaimTenant tenant = result.get(0);
+		CryptoClaimUser user = result.get(0);
+		return new String(user.getPublicKey());
+	}
+	
+	
+	public void encryptMessage(String username, byte[] message) throws CryptoClaimException {
+		List<CryptoClaimUser> result = usersRepository.findByName(username);
+		validateGetResult(result);
+		CryptoClaimUser tenant = result.get(0);
 
 		byte[] publicKeyBytes = tenant.getPublicKey();
 		
 		CryptoMessage cryptoMessage = new CryptoMessage();
 		cryptoMessage.setEncryptedData(performAsymmetricEncryption(message, keyPairManager.derivePublicKey(publicKeyBytes)));
 		cryptoMessage.setSendAt(new Date());
-		cryptoMessage.setReceivingTenant(tenantName);
+		cryptoMessage.setReceivingTenant(username);
 		// ??
 		cryptoMessage.setSendingTenant(null);
 		
@@ -92,10 +101,10 @@ public class ClaimEncryptionService {
 	}
 	
 	public byte[] decryptMessage(byte[] message, String tenantName) throws CryptoClaimException {
-		List<CryptoClaimTenant> tenantsResult = tenantsRepository.findByName(tenantName);
+		List<CryptoClaimUser> tenantsResult = usersRepository.findByName(tenantName);
 		
 		validateGetResult(tenantsResult);
-		CryptoClaimTenant tenant = tenantsResult.get(0);
+		CryptoClaimUser tenant = tenantsResult.get(0);
 		byte[] encrryptedPrivateKeyBytes = tenant.getPrivateKey();
 		
 		return performAsymmetricDecryption(message, keyPairManager.derivePrivateKey(performSymmetricDecryption(encrryptedPrivateKeyBytes)));
@@ -154,7 +163,7 @@ public class ClaimEncryptionService {
 		cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
 	}
 	
-	private void validateGetResult(List<CryptoClaimTenant> result) {
+	private void validateGetResult(List<CryptoClaimUser> result) {
 		if (result == null || result.isEmpty()) {
 			throw new NoSuchElementException("No results found");
 		} else if (result.size() > 1) {

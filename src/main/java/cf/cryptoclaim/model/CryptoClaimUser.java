@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Document(collection = "cryptoClaimTenants")
-public class CryptoClaimTenant {
+public class CryptoClaimUser {
 
 	@Id
 	@org.springframework.data.mongodb.core.mapping.Field("_id")
@@ -18,7 +18,7 @@ public class CryptoClaimTenant {
 	@JsonIgnore
 	private byte[] privateKey;
 
-	public CryptoClaimTenant(String name, String password, byte[] publicKey, byte[] privateKey) {
+	public CryptoClaimUser(String name, String password, byte[] publicKey, byte[] privateKey) {
 		super();
 		this.name = name;
 		this.password = password;

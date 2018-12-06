@@ -15,7 +15,7 @@ import cf.cryptoclaim.whitelist.WhitelistFilter;
 @Configuration
 public class CryptoClaimConfiguration {
 
-	  @Bean
+	 /* @Bean
 	  @Primary
 	  public FilterRegistrationBean<Filter> whitelistFilterRegistration() throws IOException {
 	    FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
@@ -23,6 +23,6 @@ public class CryptoClaimConfiguration {
 	    registration.setFilter(whitelistFilter);
 	    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 	    return registration;
-	  }
+	  }*/
 	
 }
