@@ -10,8 +10,11 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
@@ -23,6 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import cf.cryptoclaim.exception.CryptoClaimException;
@@ -54,6 +58,9 @@ public class ClaimEncryptionService {
 	@Autowired
 	private CryptoMessagesRepository cryptoMessagesRepository;
 	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
 	@PostConstruct
 	public void init() throws UnsupportedEncodingException {
 		secretKeySpec = new SecretKeySpec(masterKey.getBytes(UTF8_ENCODING), AES_ENCRYPTION_ALGORITHM);
@@ -66,15 +73,26 @@ public class ClaimEncryptionService {
 		asymetricCipher = Cipher.getInstance(RSA_ENCRYPTION_ALGORITHM);
 	}
 	
-	public CryptoClaimUser registerTenant(String username, String password) throws CryptoClaimException {
+	public Map<String, Object> registerTenant(String username, String password) throws CryptoClaimException {
 		KeyPair keyPair = keyPairManager.generateKeyPair();
 		
-		CryptoClaimUser user = new CryptoClaimUser(username, password, keyPair.getPublic().getEncoded(), performSymmetricEncryption(keyPair.getPrivate().getEncoded()));
+		if(usersRepository.existsByName(username)) {
+			throw new CryptoClaimException("User with the given username already exists");
+		}
+		byte[] privateKey = keyPair.getPrivate().getEncoded();
 		
-		return usersRepository.save(user);
+		Map<String, Object> propertiesToReturn = new HashMap<>();
+		propertiesToReturn.put("name", username);
+		propertiesToReturn.put("private_key", privateKey);
+		
+		CryptoClaimUser user = new CryptoClaimUser(username, passwordEncoder.encode(password), keyPair.getPublic().getEncoded(), performSymmetricEncryption(privateKey));
+		
+		usersRepository.save(user);
+		
+		return propertiesToReturn;
 	}
 	
-	public String getPublicKey(String username) throws CryptoClaimException {
+	public String getPublicKey(String username) {
 		List<CryptoClaimUser> result = usersRepository.findByName(username);
 		
 		validateGetResult(result);
@@ -82,6 +100,14 @@ public class ClaimEncryptionService {
 		return new String(user.getPublicKey());
 	}
 	
+	public RSAPublicKey getRealPublicKey(String username) throws CryptoClaimException {
+		List<CryptoClaimUser> result = usersRepository.findByName(username);
+		
+		validateGetResult(result);
+		CryptoClaimUser user = result.get(0);
+		
+		return (RSAPublicKey) keyPairManager.derivePublicKey(user.getPublicKey());
+	}
 	
 	public void encryptMessage(String username, byte[] message) throws CryptoClaimException {
 		List<CryptoClaimUser> result = usersRepository.findByName(username);

@@ -15,7 +15,6 @@ public class CryptoClaimUser {
 	private String password;
 	@JsonIgnore
 	private byte[] publicKey;
-	@JsonIgnore
 	private byte[] privateKey;
 
 	public CryptoClaimUser(String name, String password, byte[] publicKey, byte[] privateKey) {

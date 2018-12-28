@@ -1,20 +1,18 @@
 package cf.cryptoclaim.config;
 
-import java.io.IOException;
-
-import javax.servlet.Filter;
-
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
-
-import cf.cryptoclaim.whitelist.WhitelistFilter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class CryptoClaimConfiguration {
 
+	 @Bean
+	  public PasswordEncoder passwordEncoder() {
+	    return new BCryptPasswordEncoder();
+	  }
+	
 	 /* @Bean
 	  @Primary
 	  public FilterRegistrationBean<Filter> whitelistFilterRegistration() throws IOException {

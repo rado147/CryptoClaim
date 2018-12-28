@@ -10,4 +10,6 @@ import cf.cryptoclaim.model.CryptoClaimUser;
 @Repository
 public interface UsersRepository extends MongoRepository<CryptoClaimUser, String> {
 	public List<CryptoClaimUser> findByName(String name);
+	
+	public boolean existsByName(String name);
 }
