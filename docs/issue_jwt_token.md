@@ -1,5 +1,9 @@
 # Issue JWT Token
 
+### This is an example class that might be used for issuing JWT tokens
+
+### JWT tokens are used for authentication against the RESTful API of CryptoClaim
+
 ```java
 
 package test.jwt;
