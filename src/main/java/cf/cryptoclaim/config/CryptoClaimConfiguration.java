@@ -1,11 +1,21 @@
 package cf.cryptoclaim.config;
 
+import java.io.IOException;
+
+import javax.servlet.Filter;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+
+import cf.cryptoclaim.whitelist.WhitelistFilter;
 
 @Configuration
 public class CryptoClaimConfiguration {
 	
-	 /* @Bean
+	  @Bean
 	  @Primary
 	  public FilterRegistrationBean<Filter> whitelistFilterRegistration() throws IOException {
 	    FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
@@ -13,6 +23,6 @@ public class CryptoClaimConfiguration {
 	    registration.setFilter(whitelistFilter);
 	    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 	    return registration;
-	  }*/
+	  }
 	
 }

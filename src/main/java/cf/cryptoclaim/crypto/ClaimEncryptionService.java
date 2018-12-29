@@ -79,6 +79,10 @@ public class ClaimEncryptionService {
 	}
 	
 	public Map<String, Object> registerTenant(String clientId, String password) throws CryptoClaimException {
+		if(password.length() < 5 || clientId.length() < 5) {
+			throw new IllegalArgumentException("Arguments should fulfill the requirements");
+		}
+		
 		KeyPair keyPair = keyPairManager.generateKeyPair();
 		
 		if(usersRepository.existsByName(clientId)) {
