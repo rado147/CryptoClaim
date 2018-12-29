@@ -29,6 +29,11 @@ public class CryptoClaimController {
 	@Autowired
 	private JWTService jwtService;
 	
+	@GetMapping
+	public ResponseEntity<String> defaultEndpoint() {
+		return ResponseEntity.ok("CryptoClaim");
+	}
+	
 	@PostMapping("/register")
 	public ResponseEntity<?> registerTenant(@RequestParam(value = "client_id", required = true) String clientId, 
 			@RequestParam(value = "password", required = true) String password) throws CryptoClaimException {
