@@ -1,5 +1,7 @@
 package cf.cryptoclaim.controller;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import cf.cryptoclaim.auth.JWTService;
 import cf.cryptoclaim.crypto.ClaimEncryptionService;
 import cf.cryptoclaim.exception.CryptoClaimException;
 import cf.cryptoclaim.model.CryptoMessage;
+import cf.cryptoclaim.model.MessageId;
 
 @RestController
 @RequestMapping("/")
@@ -48,6 +51,14 @@ public class CryptoClaimController {
 		authenticate(httpServletRequest, clientId, clientAssertion);
 		
 		return ResponseEntity.ok(claimEncryptionService.decryptMessage(clientId, messageId));
+	}
+	
+	// here comes the question: maybe mark as read when read it or maybe delete it?
+	// pagination maybe?
+	@GetMapping("/list")
+	public ResponseEntity<List<MessageId>> getAllUnreadMessages(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId,
+		      @RequestParam(value = "client_assertion", required = true) String clientAssertion) {
+		return ResponseEntity.ok(claimEncryptionService.getMessages(clientId));
 	}
 	
 	private void authenticate(HttpServletRequest httpServletRequest, String clientId, String clientAssertion) throws CryptoClaimException {

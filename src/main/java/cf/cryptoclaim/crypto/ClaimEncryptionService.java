@@ -37,6 +37,7 @@ import cf.cryptoclaim.exception.CryptoClaimRuntimeException;
 import cf.cryptoclaim.exception.MongoInconsistencyException;
 import cf.cryptoclaim.model.CryptoClaimClient;
 import cf.cryptoclaim.model.CryptoMessage;
+import cf.cryptoclaim.model.MessageId;
 import cf.cryptoclaim.repositories.CryptoMessagesRepository;
 import cf.cryptoclaim.repositories.UsersRepository;
 
@@ -155,6 +156,10 @@ public class ClaimEncryptionService {
 		cryptoMessage.setRawData(performAsymmetricDecryption(cryptoMessage.getEncryptedData(), keyPairManager.derivePrivateKey(performSymmetricDecryption(encrryptedPrivateKeyBytes))));
 	
 		return cryptoMessage;
+	}
+	
+	public List<MessageId> getMessages(String clientId) {
+		return cryptoMessagesRepository.findByReceivingClient(clientId);
 	}
 	
 	// symmetric operations
