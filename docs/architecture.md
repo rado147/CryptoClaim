@@ -1,3 +1,3 @@
 # CryptoClaim architecture
 
-![Architecture Overview](relations.pdf)
+![Architecture Overview](relations.png)
