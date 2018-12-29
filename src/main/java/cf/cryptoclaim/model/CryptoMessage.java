@@ -34,7 +34,6 @@ public class CryptoMessage {
 		return sendingClient;
 	}
 	
-	@JsonIgnore
 	public String getReceivingClient() {
 		return receivingClient;
 	}
