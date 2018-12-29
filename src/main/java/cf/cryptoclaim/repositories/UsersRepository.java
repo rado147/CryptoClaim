@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import cf.cryptoclaim.model.CryptoClaimUser;
+import cf.cryptoclaim.model.CryptoClaimClient;
 
 @Repository
-public interface UsersRepository extends MongoRepository<CryptoClaimUser, String> {
-	public List<CryptoClaimUser> findByName(String name);
+public interface UsersRepository extends MongoRepository<CryptoClaimClient, String> {
+	public List<CryptoClaimClient> findByName(String name);
 	
 	public boolean existsByName(String name);
 }

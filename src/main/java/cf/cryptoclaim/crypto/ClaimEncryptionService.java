@@ -5,8 +5,10 @@ import static cf.cryptoclaim.constants.CryptoClaimConstants.RSA_ENCRYPTION_ALGOR
 import static cf.cryptoclaim.constants.CryptoClaimConstants.UTF8_ENCODING;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
@@ -26,12 +29,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import cf.cryptoclaim.constants.CryptoClaimConstants;
 import cf.cryptoclaim.exception.CryptoClaimException;
+import cf.cryptoclaim.exception.CryptoClaimRuntimeException;
 import cf.cryptoclaim.exception.MongoInconsistencyException;
-import cf.cryptoclaim.model.CryptoClaimUser;
+import cf.cryptoclaim.model.CryptoClaimClient;
 import cf.cryptoclaim.model.CryptoMessage;
 import cf.cryptoclaim.repositories.CryptoMessagesRepository;
 import cf.cryptoclaim.repositories.UsersRepository;
@@ -45,7 +49,9 @@ public class ClaimEncryptionService {
 	private KeyPairManager keyPairManager;
 	
 	private Cipher symmetricCipher;
-	private Cipher asymetricCipher;
+	private Cipher asymmetricCipher;
+	
+	private MessageDigest messageDigest;
 	
 	@Value("${" + C9M_MASTER_KEY + ":}")
 	private String masterKey;
@@ -58,9 +64,6 @@ public class ClaimEncryptionService {
 	@Autowired
 	private CryptoMessagesRepository cryptoMessagesRepository;
 	
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-	
 	@PostConstruct
 	public void init() throws UnsupportedEncodingException {
 		secretKeySpec = new SecretKeySpec(masterKey.getBytes(UTF8_ENCODING), AES_ENCRYPTION_ALGORITHM);
@@ -70,70 +73,84 @@ public class ClaimEncryptionService {
 		keyPairManager = KeyPairManager.getInstance();
 		
 		symmetricCipher = Cipher.getInstance(AES_WITH_MODE);
-		asymetricCipher = Cipher.getInstance(RSA_ENCRYPTION_ALGORITHM);
+		asymmetricCipher = Cipher.getInstance(RSA_ENCRYPTION_ALGORITHM);
+		
+		messageDigest = MessageDigest.getInstance(CryptoClaimConstants.HASHING_ALGORITHM);
 	}
 	
-	public Map<String, Object> registerTenant(String username, String password) throws CryptoClaimException {
+	public Map<String, Object> registerTenant(String clientId, String password) throws CryptoClaimException {
 		KeyPair keyPair = keyPairManager.generateKeyPair();
 		
-		if(usersRepository.existsByName(username)) {
+		if(usersRepository.existsByName(clientId)) {
 			throw new CryptoClaimException("User with the given username already exists");
 		}
 		byte[] privateKey = keyPair.getPrivate().getEncoded();
 		
 		Map<String, Object> propertiesToReturn = new HashMap<>();
-		propertiesToReturn.put("name", username);
+		propertiesToReturn.put("name", clientId);
 		propertiesToReturn.put("private_key", privateKey);
 		
-		CryptoClaimUser user = new CryptoClaimUser(username, passwordEncoder.encode(password), keyPair.getPublic().getEncoded(), performSymmetricEncryption(privateKey));
+		CryptoClaimClient user = new CryptoClaimClient(clientId, messageDigest.digest(password.getBytes(StandardCharsets.UTF_8)), keyPair.getPublic().getEncoded(), performSymmetricEncryption(privateKey));
 		
 		usersRepository.save(user);
 		
 		return propertiesToReturn;
 	}
 	
-	public String getPublicKey(String username) {
-		List<CryptoClaimUser> result = usersRepository.findByName(username);
+	public String getPublicKeyAsString(String clientId) {
+		List<CryptoClaimClient> result = usersRepository.findByName(clientId);
 		
 		validateGetResult(result);
-		CryptoClaimUser user = result.get(0);
+		CryptoClaimClient user = result.get(0);
 		return new String(user.getPublicKey());
 	}
 	
-	public RSAPublicKey getRealPublicKey(String username) throws CryptoClaimException {
-		List<CryptoClaimUser> result = usersRepository.findByName(username);
+	public RSAPublicKey getPublicKey(String clientId) throws CryptoClaimException {
+		List<CryptoClaimClient> result = usersRepository.findByName(clientId);
 		
 		validateGetResult(result);
-		CryptoClaimUser user = result.get(0);
+		CryptoClaimClient user = result.get(0);
 		
 		return (RSAPublicKey) keyPairManager.derivePublicKey(user.getPublicKey());
 	}
 	
-	public void encryptMessage(String username, byte[] message) throws CryptoClaimException {
-		List<CryptoClaimUser> result = usersRepository.findByName(username);
-		validateGetResult(result);
-		CryptoClaimUser tenant = result.get(0);
+	public void encryptMessageAndSave(String receivingClientId, String sendingClientId, CryptoMessage cryptoMessage) throws CryptoClaimException {
 
-		byte[] publicKeyBytes = tenant.getPublicKey();
-		
-		CryptoMessage cryptoMessage = new CryptoMessage();
-		cryptoMessage.setEncryptedData(performAsymmetricEncryption(message, keyPairManager.derivePublicKey(publicKeyBytes)));
+		if(cryptoMessage.getReceivingClient() == null) {
+			throw new CryptoClaimRuntimeException("Receiving client not set");
+		}
 		cryptoMessage.setSendAt(new Date());
-		cryptoMessage.setReceivingTenant(username);
-		// ??
-		cryptoMessage.setSendingTenant(null);
+		cryptoMessage.setSendingClient(sendingClientId);
+		
+		
+		List<CryptoClaimClient> result = usersRepository.findByName(receivingClientId);
+		validateGetResult(result);
+		CryptoClaimClient client = result.get(0);
+
+		byte[] publicKeyBytes = client.getPublicKey();
+		
+		cryptoMessage.setEncryptedData(performAsymmetricEncryption(cryptoMessage.getRawData(), keyPairManager.derivePublicKey(publicKeyBytes)));
+		cryptoMessage.setRawData(null);
 		
 		cryptoMessagesRepository.save(cryptoMessage);
 	}
 	
-	public byte[] decryptMessage(byte[] message, String tenantName) throws CryptoClaimException {
-		List<CryptoClaimUser> tenantsResult = usersRepository.findByName(tenantName);
+	public CryptoMessage decryptMessage(String clientId, String messageId) throws CryptoClaimException {
+		List<CryptoClaimClient> result = usersRepository.findByName(clientId);
 		
-		validateGetResult(tenantsResult);
-		CryptoClaimUser tenant = tenantsResult.get(0);
-		byte[] encrryptedPrivateKeyBytes = tenant.getPrivateKey();
+		validateGetResult(result);
+		CryptoClaimClient client = result.get(0);
+		byte[] encrryptedPrivateKeyBytes = client.getPrivateKey();
 		
-		return performAsymmetricDecryption(message, keyPairManager.derivePrivateKey(performSymmetricDecryption(encrryptedPrivateKeyBytes)));
+		Optional<CryptoMessage> cryptoMessageOptional = cryptoMessagesRepository.findById(messageId);
+		if(!cryptoMessageOptional.isPresent()) {
+			throw new CryptoClaimException("Message not found");
+		}
+		
+		CryptoMessage cryptoMessage = cryptoMessageOptional.get();
+		cryptoMessage.setRawData(performAsymmetricDecryption(cryptoMessage.getEncryptedData(), keyPairManager.derivePrivateKey(performSymmetricDecryption(encrryptedPrivateKeyBytes))));
+	
+		return cryptoMessage;
 	}
 	
 	// symmetric operations
@@ -160,9 +177,9 @@ public class ClaimEncryptionService {
 	// asymmetric operations
 	private byte[] performAsymmetricDecryption(byte[] message, PrivateKey privateKey) throws CryptoClaimException {
 		try {
-			asymetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
+			asymmetricCipher.init(Cipher.DECRYPT_MODE, privateKey);
 			
-			return asymetricCipher.doFinal(message);
+			return asymmetricCipher.doFinal(message);
 		} catch (BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
 			throw new CryptoClaimException("Error while decrypting", e);
 		}
@@ -171,9 +188,9 @@ public class ClaimEncryptionService {
 	private byte[] performAsymmetricEncryption(byte[] message, PublicKey publicKey) throws CryptoClaimException {
 		byte[] encryptedData = null;
 		try {
-			asymetricCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+			asymmetricCipher.init(Cipher.ENCRYPT_MODE, publicKey);
 			
-			encryptedData = asymetricCipher.doFinal(message);
+			encryptedData = asymmetricCipher.doFinal(message);
 		} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 			throw new CryptoClaimException("Error while encrypting", e);
 		}
@@ -189,7 +206,7 @@ public class ClaimEncryptionService {
 		cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
 	}
 	
-	private void validateGetResult(List<CryptoClaimUser> result) {
+	private void validateGetResult(List<CryptoClaimClient> result) {
 		if (result == null || result.isEmpty()) {
 			throw new NoSuchElementException("No results found");
 		} else if (result.size() > 1) {

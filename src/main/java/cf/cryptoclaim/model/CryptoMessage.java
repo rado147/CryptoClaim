@@ -1,23 +1,42 @@
 package cf.cryptoclaim.model;
 
 import java.util.Date;
+import java.util.UUID;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Document(collection = "cryptoMessages")
 public class CryptoMessage {
 
-	private String sendingTenant;
-	private String receivingTenant;
-	private byte[] encryptedData;
-	private Date sendAt;
+	private String sendingClient;
 	
-	public String getSendingTenant() {
-		return sendingTenant;
+	@JsonIgnore
+	private String receivingClient;
+	
+	private byte[] rawData;
+	
+	@JsonIgnore
+	private byte[] encryptedData;
+	
+	private Date sendAt;
+
+	@Id
+	@org.springframework.data.mongodb.core.mapping.Field("_id")
+	private String id;
+	
+	private CryptoMessage() {
+		this.setId(UUID.randomUUID().toString());
 	}
 	
-	public String getReceivingTenant() {
-		return receivingTenant;
+	public String getSendingClient() {
+		return sendingClient;
+	}
+	
+	public String getReceivingClient() {
+		return receivingClient;
 	}
 	
 	public byte[] getEncryptedData() {
@@ -28,12 +47,12 @@ public class CryptoMessage {
 		return sendAt;
 	}
 	
-	public void setSendingTenant(String sendingTenant) {
-		this.sendingTenant = sendingTenant;
+	public void setSendingClient(String sendingClient) {
+		this.sendingClient = sendingClient;
 	}
 	
-	public void setReceivingTenant(String receivingTenant) {
-		this.receivingTenant = receivingTenant;
+	public void setReceivingClient(String receivingClient) {
+		this.receivingClient = receivingClient;
 	}
 	
 	public void setEncryptedData(byte[] encryptedData) {
@@ -42,5 +61,21 @@ public class CryptoMessage {
 	
 	public void setSendAt(Date sendAt) {
 		this.sendAt = sendAt;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public byte[] getRawData() {
+		return rawData;
+	}
+
+	public void setRawData(byte[] rawData) {
+		this.rawData = rawData;
 	}
 }
