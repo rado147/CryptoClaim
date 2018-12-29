@@ -3,7 +3,17 @@
 		{
 			"path": "/register",
 			"methods": ["POST"],
-			"parameters": ["username", "password"]
+			"parameters": ["client_id", "password"]
+		},
+		{
+			"path": "/send",
+			"methods": ["POST"],
+			"parameters": ["client_id", "client_assertion"]
+		},
+		{
+			"path": "/read",
+			"methods": ["GET"],
+			"parameters": ["client_id", "client_assertion", "message_id"]
 		}
 	]
 }

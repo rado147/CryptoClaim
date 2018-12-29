@@ -26,7 +26,7 @@ public class WhitelistFilter implements Filter {
 		InputStream streamData = WhitelistFilter.class.getResourceAsStream("/whitelist_requests.json");
 		
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.readValue(streamData, WhitelistRequests.class);
+		whitelistRequests = objectMapper.readValue(streamData, WhitelistRequests.class);
 	}
 	
 	@Override
@@ -44,7 +44,7 @@ public class WhitelistFilter implements Filter {
 			parameters.add(parametersIter.nextElement());
 		}
 		
-		WhitelistRequests.WhitelistSingleRequest pathMatchingRequest = getPathMatchingRequest(httpRequest.getRequestURI());
+		WhitelistSingleRequest pathMatchingRequest = getPathMatchingRequest(httpRequest.getRequestURI());
 		
 		boolean flag = false;
 		if(pathMatchingRequest == null || !pathMatchingRequest.getMethods().contains(requestMethod)) {
@@ -65,9 +65,9 @@ public class WhitelistFilter implements Filter {
 		
 	}
 
-	private WhitelistRequests.WhitelistSingleRequest getPathMatchingRequest(String path) {
-		Set<WhitelistRequests.WhitelistSingleRequest> allowedRequests = whitelistRequests.getAllowedRequests();
-		for(WhitelistRequests.WhitelistSingleRequest request : allowedRequests) {
+	private WhitelistSingleRequest getPathMatchingRequest(String path) {
+		Set<WhitelistSingleRequest> allowedRequests = whitelistRequests.getAllowedRequests();
+		for(WhitelistSingleRequest request : allowedRequests) {
 			if (path.endsWith(request.getPath())) {
 				return request;
 			}

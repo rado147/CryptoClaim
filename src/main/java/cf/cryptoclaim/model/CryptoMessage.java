@@ -13,7 +13,6 @@ public class CryptoMessage {
 
 	private String sendingClient;
 	
-	@JsonIgnore
 	private String receivingClient;
 	
 	private byte[] rawData;
@@ -35,6 +34,7 @@ public class CryptoMessage {
 		return sendingClient;
 	}
 	
+	@JsonIgnore
 	public String getReceivingClient() {
 		return receivingClient;
 	}
