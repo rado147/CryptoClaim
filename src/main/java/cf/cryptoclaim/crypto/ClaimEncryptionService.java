@@ -52,7 +52,7 @@ public class ClaimEncryptionService {
 
 	private static final String SEND_AT_ATTRIBUTE = "sendAt";
 	private static final String ID_ATTRIBUTE = "id";
-	private static final String SENDING_CLIENT_ATTRIBUTE = "sendCLIENT";
+	private static final String SENDING_CLIENT_ATTRIBUTE = "sendingClient";
 	private static final Set<String> VALID_LISTING_ATTRIBUTES = new HashSet<>(Arrays.asList(SEND_AT_ATTRIBUTE, ID_ATTRIBUTE, SENDING_CLIENT_ATTRIBUTE));
 	
 	private static final String AES_ENCRYPTION_ALGORITHM = "AES";

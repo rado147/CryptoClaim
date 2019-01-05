@@ -29,8 +29,6 @@ import cf.cryptoclaim.exception.WrongPasswordException;
 public class CryptoClaimAuthenticationFilter implements Filter {
 
 	private static final String CLIENT_ID_KEY = "client_id";
-	
-	
 	private static final Set<String> NO_AUTHENTICATION_URI_POSTFIXES = new HashSet<>(Arrays.asList("/register", "/"));
 	
 	@Autowired
