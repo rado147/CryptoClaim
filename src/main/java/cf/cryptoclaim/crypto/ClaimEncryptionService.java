@@ -13,12 +13,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
@@ -29,6 +32,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import cf.cryptoclaim.constants.CryptoClaimConstants;
@@ -44,6 +50,11 @@ import cf.cryptoclaim.repositories.UsersRepository;
 @Component
 public class ClaimEncryptionService {
 
+	private static final String SEND_AT_ATTRIBUTE = "sendAt";
+	private static final String ID_ATTRIBUTE = "id";
+	private static final String SENDING_CLIENT_ATTRIBUTE = "sendCLIENT";
+	private static final Set<String> VALID_LISTING_ATTRIBUTES = new HashSet<>(Arrays.asList(SEND_AT_ATTRIBUTE, ID_ATTRIBUTE, SENDING_CLIENT_ATTRIBUTE));
+	
 	private static final String AES_ENCRYPTION_ALGORITHM = "AES";
 	private static final String AES_WITH_MODE = AES_ENCRYPTION_ALGORITHM + "/ECB/PKCS5Padding";
 
@@ -120,7 +131,6 @@ public class ClaimEncryptionService {
 	}
 	
 	public void encryptMessageAndSave(String receivingClientId, String sendingClientId, CryptoMessage cryptoMessage) throws CryptoClaimException {
-
 		if(cryptoMessage.getReceivingClient() == null) {
 			throw new CryptoClaimRuntimeException("Receiving client not set");
 		}
@@ -158,8 +168,49 @@ public class ClaimEncryptionService {
 		return cryptoMessage;
 	}
 	
-	public List<MessageInformation> getMessages(String clientId) {
-		return cryptoMessagesRepository.findByReceivingClient(clientId);
+	public Page<MessageInformation> getMessages(String clientId, Set<String> attributes, Pageable pageable) {
+		Page<MessageInformation> messages = cryptoMessagesRepository.findByReceivingClient(clientId, getValidPageable(pageable));
+
+		if(attributes != null && !attributes.isEmpty()) {
+			prepareMessagesForListing(getValidAttributes(attributes), messages);
+		}
+		
+		return messages;
+	}
+	
+	private Pageable getValidPageable(Pageable pageable) {
+		if(pageable.getPageSize() > CryptoClaimConstants.MAX_PAGE_SIZE || pageable.getPageSize() < 0) {
+			return PageRequest.of(pageable.getPageNumber(), CryptoClaimConstants.DEFAULT_PAGE_SIZE, pageable.getSort());
+		}
+		return pageable;
+	}
+	
+	private void prepareMessagesForListing(Set<String> attributes, Page<MessageInformation> messages) {
+		if(!attributes.contains(SEND_AT_ATTRIBUTE)) {
+			for(MessageInformation message : messages) {
+				message.setSendAt(null);
+			}
+		}
+		if(!attributes.contains(SENDING_CLIENT_ATTRIBUTE)) {
+			for(MessageInformation message : messages) {
+				message.setSendingClient(null);
+			}
+		}
+		if(!attributes.contains(ID_ATTRIBUTE)) {
+			for(MessageInformation message : messages) {
+				message.setId(null);
+			}
+		}
+	}
+	
+	private Set<String> getValidAttributes(Set<String> attributes) {
+		Set<String> validAttributes = new HashSet<>();
+		for(String attribute : attributes) {
+			if(VALID_LISTING_ATTRIBUTES.contains(attribute)) {
+				validAttributes.add(attribute);
+			}
+		}
+		return validAttributes;
 	}
 	
 	// symmetric operations

@@ -8,17 +8,17 @@
 		{
 			"path": "/send",
 			"methods": ["POST"],
-			"parameters": ["client_id", "client_assertion"]
+			"parameters": ["client_id"]
 		},
 		{
 			"path": "/read",
 			"methods": ["GET"],
-			"parameters": ["client_id", "client_assertion", "message_id"]
+			"parameters": ["client_id", "message_id"]
 		},
 		{
 			"path": "/list",
 			"methods": ["GET"],
-			"parameters": ["client_id", "client_assertion"]
+			"parameters": ["client_id", "page", "size", "sort", "attributes"]
 		}
 	]
 }

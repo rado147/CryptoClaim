@@ -14,4 +14,9 @@ public class CryptoClaimConstants {
 	public static final String RSA_ENCRYPTION_ALGORITHM = "RSA";
 	public static final String HASHING_ALGORITHM = "SHA-256";
 	public static final int JWT_CLAIM_IAT_CLOCK_SKEW_SECONDS = 300;
+	
+	public static final int DEFAULT_PAGE_NUMBER = 0;
+	public static final int DEFAULT_PAGE_SIZE = 100;
+	public static final int MAX_PAGE_SIZE = 500;
+	
 }
