@@ -1,6 +1,10 @@
 {
 	"allowedRequests": [
 		{
+			"path": "",
+			"methods": ["GET"]
+		},
+		{
 			"path": "/register",
 			"methods": ["POST"],
 			"parameters": ["client_id", "password"]

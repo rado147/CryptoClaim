@@ -1,6 +1,9 @@
 package cf.cryptoclaim.auth;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,6 +30,9 @@ public class CryptoClaimAuthenticationFilter implements Filter {
 
 	private static final String CLIENT_ID_KEY = "client_id";
 	
+	
+	private static final Set<String> NO_AUTHENTICATION_URI_POSTFIXES = new HashSet<>(Arrays.asList("/register", "/"));
+	
 	@Autowired
 	private JWTService jwtService;
 	
@@ -45,7 +51,7 @@ public class CryptoClaimAuthenticationFilter implements Filter {
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 		
-		if(onRegistration(httpServletRequest, httpServletResponse, chain)) {
+		if(isAuthenticationRequired(httpServletRequest, httpServletResponse, chain)) {
 			return;
 		}
 		
@@ -66,10 +72,14 @@ public class CryptoClaimAuthenticationFilter implements Filter {
 		httpServletResponse.sendError(HttpStatus.BAD_REQUEST.value());
 	}
 
-	private boolean onRegistration(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(request.getRequestURI().endsWith("register")) {
-			chain.doFilter(request, response);
-			return true;
+	private boolean isAuthenticationRequired(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+		String requestUri = request.getRequestURI();
+		
+		for(String postfix : NO_AUTHENTICATION_URI_POSTFIXES) {
+			if(requestUri.equals(postfix)) {
+				chain.doFilter(request, response);
+				return true;
+			}
 		}
 		return false;
 	}

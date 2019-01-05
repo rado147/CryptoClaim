@@ -44,14 +44,14 @@ public class WhitelistFilter implements Filter {
 			parameters.add(parametersIter.nextElement());
 		}
 		
-		WhitelistSingleRequest pathMatchingRequest = getPathMatchingRequest(httpRequest.getRequestURI());
+		WhitelistSingleRequest pathMatchingRequest = getPathMatchingRequest(getNormalizedRequestPath(httpRequest.getRequestURI()));
 		
 		boolean flag = false;
 		if(pathMatchingRequest == null || !pathMatchingRequest.getMethods().contains(requestMethod)) {
 			flag = true;
 			httpResponse.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 		} else {
-			Set<String> parametersFromRequest = pathMatchingRequest.getParameters();
+			Set<String> parametersFromRequest = pathMatchingRequest.getParameters() == null ? new HashSet<>() : pathMatchingRequest.getParameters();
 			for(String parameter : parameters) {
 				if(!parametersFromRequest.contains(parameter)) {
 					flag = true;
@@ -68,11 +68,14 @@ public class WhitelistFilter implements Filter {
 	private WhitelistSingleRequest getPathMatchingRequest(String path) {
 		Set<WhitelistSingleRequest> allowedRequests = whitelistRequests.getAllowedRequests();
 		for(WhitelistSingleRequest request : allowedRequests) {
-			if (path.endsWith(request.getPath())) {
+			if (path.equals(request.getPath())) {
 				return request;
 			}
 		}
 		return null;
 	}
 	
+	private String getNormalizedRequestPath(String path) {
+			return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+	}
 }
