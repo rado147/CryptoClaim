@@ -1,5 +1,6 @@
 package cf.cryptoclaim.controller;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,8 @@ import cf.cryptoclaim.model.MessageInformation;
 @RequestMapping("/")
 public class CryptoClaimController {
 
+	private static final String CLIENT_ID_KEY = "client_id";
+	
 	@Autowired
 	private ClaimEncryptionService claimEncryptionService;
 	
@@ -36,27 +39,27 @@ public class CryptoClaimController {
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<?> registerTenant(@RequestParam(value = "client_id", required = true) String clientId, 
+	public ResponseEntity<Map<String, Object>> registerTenant(@RequestParam(value = CLIENT_ID_KEY, required = true) String clientId, 
 			@RequestParam(value = "password", required = true) String password) throws CryptoClaimException {
 		return ResponseEntity.ok().body(claimEncryptionService.registerTenant(clientId, password));
 	}
 	
 	@PostMapping("/send")
-	public ResponseEntity<?> sendMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId, 
+	public ResponseEntity<String> sendMessage(HttpServletRequest httpServletRequest, @RequestParam(value = CLIENT_ID_KEY, required = true) String clientId, 
 			@RequestBody(required = true) CryptoMessage cryptoMessage) throws CryptoClaimException {
-		claimEncryptionService.encryptMessageAndSave(cryptoMessage.getReceivingClient(), clientId, cryptoMessage);
+		claimEncryptionService.encryptMessageAndSave(clientId, cryptoMessage);
 		
-		return ResponseEntity.ok().body("Message send");
+		return ResponseEntity.ok().body("Message send to" + cryptoMessage.getReceivingClient());
 	}
 	
 	@GetMapping("/read")
-	public ResponseEntity<CryptoMessage> readMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId, 
+	public ResponseEntity<CryptoMessage> readMessage(HttpServletRequest httpServletRequest, @RequestParam(value = CLIENT_ID_KEY, required = true) String clientId, 
 			@RequestParam(value = "message_id", required = true) String messageId) throws CryptoClaimException {
 		return ResponseEntity.ok(claimEncryptionService.decryptMessage(clientId, messageId));
 	}
 	
 	@GetMapping("/list")
-	public ResponseEntity<Page<MessageInformation>> getAllUnreadMessages(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId, 
+	public ResponseEntity<Page<MessageInformation>> getAllUnreadMessages(HttpServletRequest httpServletRequest, @RequestParam(value = CLIENT_ID_KEY, required = true) String clientId, 
 			@RequestParam(value = "attributes", required = false) Set<String> attributes, 
 			@PageableDefault(page = CryptoClaimConstants.DEFAULT_PAGE_NUMBER, size = CryptoClaimConstants.DEFAULT_PAGE_SIZE, sort = "sendAt", direction = Direction.ASC) Pageable pageable) {
 		return ResponseEntity.ok(claimEncryptionService.getMessages(clientId, attributes, pageable));

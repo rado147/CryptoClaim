@@ -130,15 +130,16 @@ public class ClaimEncryptionService {
 		return (RSAPublicKey) keyPairManager.derivePublicKey(user.getPublicKey());
 	}
 	
-	public void encryptMessageAndSave(String receivingClientId, String sendingClientId, CryptoMessage cryptoMessage) throws CryptoClaimException {
-		if(cryptoMessage.getReceivingClient() == null) {
+	public void encryptMessageAndSave(String sendingClientId, CryptoMessage cryptoMessage) throws CryptoClaimException {
+		String receivingClient = cryptoMessage.getReceivingClient();
+		if(receivingClient == null) {
 			throw new CryptoClaimRuntimeException("Receiving client not set");
 		}
 		cryptoMessage.setSendAt(new Date());
 		cryptoMessage.setSendingClient(sendingClientId);
 		
 		
-		List<CryptoClaimClient> result = usersRepository.findByName(receivingClientId);
+		List<CryptoClaimClient> result = usersRepository.findByName(receivingClient);
 		validateGetResult(result);
 		CryptoClaimClient client = result.get(0);
 
