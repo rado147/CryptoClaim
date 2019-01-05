@@ -6,9 +6,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import cf.cryptoclaim.model.CryptoMessage;
-import cf.cryptoclaim.model.MessageId;
+import cf.cryptoclaim.model.MessageInformation;
 
 @Repository
 public interface CryptoMessagesRepository extends MongoRepository<CryptoMessage, String> {
-	public List<MessageId> findByReceivingClient(String receivingClient);
+	public List<MessageInformation> findByReceivingClient(String receivingClient);
 }

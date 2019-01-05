@@ -1,6 +1,6 @@
 package cf.cryptoclaim.model;
 
-public class MessageId {
+public class MessageInformation {
 
 	private String id;
 

@@ -45,23 +45,23 @@ public class JWTService {
 		messageDigest = MessageDigest.getInstance(CryptoClaimConstants.HASHING_ALGORITHM);
 	}
 	
-	public DecodedJWT verifyJWT(HttpServletRequest httpRequest, String assertion, String clientId, RSAPublicKey publicKey)		       {
-		    Algorithm algorithm = Algorithm.RSA256(publicKey, null);
-		    Verification verification = JWT.require(algorithm);
-		    verification.withIssuer(clientId);
-		    verification.withAudience(httpRequest.getRequestURL().toString());
-		    verification.acceptIssuedAt(300);
-		    JWTVerifier verifier = verification.build();
-		    DecodedJWT decodedJWT;
-		    try {
-		      decodedJWT = verifier.verify(assertion);
-		      verifyAdditionalClaims(decodedJWT, clientId);
-		      finalizeAndRegister(decodedJWT);
+	public DecodedJWT verifyJWT(HttpServletRequest httpRequest, String assertion, String clientId, RSAPublicKey publicKey) {
+	    Algorithm algorithm = Algorithm.RSA256(publicKey, null);
+	    Verification verification = JWT.require(algorithm);
+	    verification.withIssuer(clientId);
+	    verification.withAudience(httpRequest.getRequestURL().toString());
+	    verification.acceptIssuedAt(300);
+	    JWTVerifier verifier = verification.build();
+	    DecodedJWT decodedJWT;
+	    try {
+			decodedJWT = verifier.verify(assertion);
+			verifyAdditionalClaims(decodedJWT, clientId);
+			finalizeAndRegister(decodedJWT);
 	    } catch (JWTVerificationException e) {
 	    	throw new AuthenticationFailedException("Authentication failed", e);
 	    }
-	    return decodedJWT;
-	  }
+    	return decodedJWT;
+	}
 	
 	private void verifyAdditionalClaims(DecodedJWT decodedJWT, String username) {
 		CryptoClaimClient user = usersRepository.findByName(username).get(0);
@@ -72,7 +72,6 @@ public class JWTService {
 	}
 	
 	public void finalizeAndRegister(DecodedJWT decodedJWT) {
-
 	    ConsumedJWT consumedJWT = new ConsumedJWT();
 	    consumedJWT.setIssuer(decodedJWT.getIssuer());
 	    consumedJWT.setJti(decodedJWT.getId());
@@ -82,6 +81,6 @@ public class JWTService {
 	    } catch (DuplicateKeyException e) {
 	      throw new JWTVerificationException("JWT verification failed: The Token had already been used.", e);
 	    }
-	  }
+	}
 	
 }

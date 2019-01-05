@@ -17,7 +17,7 @@ import cf.cryptoclaim.auth.JWTService;
 import cf.cryptoclaim.crypto.ClaimEncryptionService;
 import cf.cryptoclaim.exception.CryptoClaimException;
 import cf.cryptoclaim.model.CryptoMessage;
-import cf.cryptoclaim.model.MessageId;
+import cf.cryptoclaim.model.MessageInformation;
 
 @RestController
 @RequestMapping("/")
@@ -25,9 +25,6 @@ public class CryptoClaimController {
 
 	@Autowired
 	private ClaimEncryptionService claimEncryptionService;
-	
-	@Autowired
-	private JWTService jwtService;
 	
 	@GetMapping
 	public ResponseEntity<String> defaultEndpoint() {
@@ -41,34 +38,20 @@ public class CryptoClaimController {
 	}
 	
 	@PostMapping("/send")
-	public ResponseEntity<?> sendMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId,
-		      @RequestParam(value = "client_assertion", required = true) String clientAssertion, @RequestBody(required = true) CryptoMessage cryptoMessage) throws CryptoClaimException {
-		authenticate(httpServletRequest, clientId, clientAssertion);
-		
+	public ResponseEntity<?> sendMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId, @RequestBody(required = true) CryptoMessage cryptoMessage) throws CryptoClaimException {
 		claimEncryptionService.encryptMessageAndSave(cryptoMessage.getReceivingClient(), clientId, cryptoMessage);
 		
 		return ResponseEntity.ok().body("Message send");
 	}
 	
 	@GetMapping("/read")
-	public ResponseEntity<CryptoMessage> readMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId,
-		      @RequestParam(value = "client_assertion", required = true) String clientAssertion, @RequestParam(value = "message_id", required = true) String messageId) throws CryptoClaimException {
-		authenticate(httpServletRequest, clientId, clientAssertion);
-		
+	public ResponseEntity<CryptoMessage> readMessage(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId, @RequestParam(value = "message_id", required = true) String messageId) throws CryptoClaimException {
 		return ResponseEntity.ok(claimEncryptionService.decryptMessage(clientId, messageId));
 	}
 	
-	// here comes the question: maybe mark as read when read it or maybe delete it?
-	// pagination maybe?
 	@GetMapping("/list")
-	public ResponseEntity<List<MessageId>> getAllUnreadMessages(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId,
-		      @RequestParam(value = "client_assertion", required = true) String clientAssertion) {
+	public ResponseEntity<List<MessageInformation>> getAllUnreadMessages(HttpServletRequest httpServletRequest, @RequestParam(value = "client_id", required = true) String clientId) {
 		return ResponseEntity.ok(claimEncryptionService.getMessages(clientId));
 	}
-	
-	private void authenticate(HttpServletRequest httpServletRequest, String clientId, String clientAssertion) throws CryptoClaimException {
-		jwtService.verifyJWT(httpServletRequest, clientAssertion, clientId, claimEncryptionService.getPublicKey(clientId));
-	}
-	
 	
 }

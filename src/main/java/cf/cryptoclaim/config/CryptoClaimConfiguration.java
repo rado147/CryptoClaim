@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 
+import cf.cryptoclaim.auth.CryptoClaimAuthenticationFilter;
 import cf.cryptoclaim.whitelist.WhitelistFilter;
 
 @Configuration
@@ -24,5 +25,13 @@ public class CryptoClaimConfiguration {
 	    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 	    return registration;
 	  }
-	
+
+	  @Bean
+	  public FilterRegistrationBean<Filter> authenticationFilterRegistration() throws IOException {
+	    FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+	    CryptoClaimAuthenticationFilter cryptoClaimAuthenticationFilter = new CryptoClaimAuthenticationFilter();
+	    registration.setFilter(cryptoClaimAuthenticationFilter);
+	    return registration;
+	  }
+	  
 }
