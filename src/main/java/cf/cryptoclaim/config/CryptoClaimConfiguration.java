@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 
 import cf.cryptoclaim.auth.CryptoClaimAuthenticationFilter;
+import cf.cryptoclaim.controller.HttpRequestLengthInterceptor;
 import cf.cryptoclaim.whitelist.WhitelistFilter;
 
 @Configuration
@@ -34,4 +35,8 @@ public class CryptoClaimConfiguration {
 	    return registration;
 	  }
 	  
+	  @Bean
+	  public HttpRequestLengthInterceptor httpRequestLengthInterceptor() {
+	    return new HttpRequestLengthInterceptor();
+	  }
 }
