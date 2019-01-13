@@ -18,29 +18,29 @@ Base URL is: https://cryptoclaim.cfapps.sap.hana.ondemand.com/
 ### Register
 
 Example response body:
-
+```json
 {
     "name": "user1",
     "private_key": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQChlvB5eydtHmgIsyB+afWaCp..."
 }
+```
 
 ### Send
 
 Example request body:
-
+```json
 {
 	"receivingClient": "user2",
 	"rawData": "/s/d"
 }
-
+```
 Example response body:
-
 "Message send to user2"
 
 ### Read
 
 Example response body:
-
+```json
 {
     "sendingClient": "testname3",
     "receivingClient": "user1",
@@ -48,11 +48,11 @@ Example response body:
     "sendAt": "2019-01-13T10:49:10.840+0000",
     "id": "b75aee28-4bd4-49e1-ac5a-669f6638d533"
 }
-
+```
 ### List
 
 Example response body:
-
+```json
 {
     "content": [
         {
@@ -92,5 +92,5 @@ Example response body:
     "numberOfElements": 2,
     "empty": false
 }
-
+```
 
