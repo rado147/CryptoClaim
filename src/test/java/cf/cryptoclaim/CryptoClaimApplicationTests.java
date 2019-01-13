@@ -7,6 +7,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cf.cryptoclaim.auth.JWTService;
+import cf.cryptoclaim.controller.HttpRequestLengthInterceptor;
 import cf.cryptoclaim.crypto.ClaimEncryptionService;
 import cf.cryptoclaim.repositories.ConsumedJWTRepository;
 import cf.cryptoclaim.repositories.CryptoMessagesRepository;
@@ -26,7 +27,9 @@ public class CryptoClaimApplicationTests {
 	private JWTService jwtService;
 	@MockBean
 	private ClaimEncryptionService claimEncryptionService;
-	
+	/*@MockBean
+	private HttpRequestLengthInterceptor httpRequestLengthInterceptor;
+	*/
 	@Test
 	public void contextLoads() {
 	}

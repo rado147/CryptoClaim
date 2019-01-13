@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +51,7 @@ public class CryptoClaimController {
 			@RequestBody(required = true) CryptoMessage cryptoMessage) throws CryptoClaimException {
 		claimEncryptionService.encryptMessageAndSave(clientId, cryptoMessage);
 		
-		return ResponseEntity.ok().body("Message send to" + cryptoMessage.getReceivingClient());
+		return ResponseEntity.ok().body("Message send to " + cryptoMessage.getReceivingClient());
 	}
 	
 	@GetMapping("/read")

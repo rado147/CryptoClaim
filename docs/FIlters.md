@@ -1,4 +1,4 @@
-# Servlet Filters used in CryptoClaim
+# Servlet Filters and Request Interceptors used in CryptoClaim
 
 ### Authentication filter
 
@@ -12,3 +12,8 @@ This filtered is used for performing authentication with Signed JSON Web Tokens 
 ### Whitelist filter
 
 This filter is implemented with highest precedence, meaning it will be the first one invoked in the chain of filters. The purpose of implementing it is getting rid of some vulnerabilities coming from the 'Spring' and others. The filter checks if the combination of [request URI + request method + request parameters] is supported and if not then status code 501 (Not implemented) is returned. This way many possible attacks will be prevented, including Cross site scripting(XSS), Buffer overflow etc. 
+
+
+### HttpRequestLengthInterceptor
+
+This handler interceptor assures that the request length(basically the body of the request - when sending message) is less than a fixed hardcoded size of 64KB. Another validation is of the length of the URL - this is validated against another hardcoded value of 150. This interceptor is implemented with the purpose of stopping requests that are trying to flood the application with too large or malformed data.
